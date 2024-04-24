@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+  <head>
+    {% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <title>{% block title %}{% endblock %} - CST205 Final Project</title>
+    {% endblock %}
+  </head>
+  <body>
+    <nav>
+        <ul class="nav-list">
+            <li class="nav-item"><a class="nav-brand" href="{{ url_for('start') }}">CST205 Final Project</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('start') }}">Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('browse') }}">Browse</a></li>
+        </ul>
+    </nav>
+    <div class="content">{% block content %}{% endblock %}</div>
+    <!-- <div id="footer">
+      {% block footer %}
+      &copy; Copyright 2010 by <a href="http://domain.invalid/">you</a>.
+      {% endblock %}
+    </div> -->
+  </body>
+</html>

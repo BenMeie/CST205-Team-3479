@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+{% block title %}Welcome{% endblock %}
+{% block content %}
+  <h1>Welcome</h1>
+  <p>Select the location of your files here</p>
+  <form>
+    <input type="text" name="folder" placeholder="Enter a folder path">
+    <button type="submit" class="btn btn-primary">Select</button>
+  </form>
+  <script type="text/javascript">
+    document.querySelector('form').addEventListener('submit', function(event) {
+      event.preventDefault();
+      fetch('/select_folder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          folder: document.querySelector('input').value
+        })
+      }).then(function(response) {
+        window.location.href = '/browse'
+      })
+    });
+  </script>
+{% endblock %}
