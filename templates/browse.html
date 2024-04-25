@@ -1,6 +1,83 @@
 {% extends "layout.html" %}
 {% block title %}Browse{% endblock %}
+{% block head %}<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>{% endblock %}
 {% block content %}
   <h1>Browse</h1>
-  <p>Here is where you browse your audio files. The bulk of the app will be here</p>
+  {% for file in audio_files %}
+
+    <div class="audio">
+      <p>{{file['name']}}</p>
+      <div class="controls">
+        <button class="control-button" id="audio_{{file['id']}}_play"><img src="{{url_for("static", filename="icons/play.svg")}}" /></button>
+        <div class="volume-control">
+          <button id="audio_{{file['id']}}_volume_reveal" class="control-button"><img src="{{url_for("static", filename="icons/volume-2.svg")}}" /></button>
+          <div class="slider-container hidden" id="audio_{{file['id']}}_volume" style="width: 100px;">
+            <div class="slider-background"></div>
+            <div class="slider-button" id="audio_{{file['id']}}_slider_button"></div>
+            <div class="slider-filled" id="audio_{{file['id']}}_slider_fill"></div>
+          </div>
+        </div>
+        <div class="slider-container" id="audio_{{file['id']}}_seek">
+          <div class="slider-background"></div>
+          <div class="slider-button" id="audio_{{file['id']}}_seek_button"></div>
+          <div class="slider-filled" id="audio_{{file['id']}}_seek_fill" ></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const changeVolume_{{file['id']}} = (e) => {
+        let rect = e.currentTarget.getBoundingClientRect();
+        let volume = (e.clientX - rect.left) / rect.width;
+        if(volume < 1) {
+          document.querySelector("#audio_{{file['id']}}_slider_button").style.marginLeft = volume * 85 + "%";
+          document.querySelector("#audio_{{file['id']}}_slider_fill").style.width = volume * 100 + "%";
+          sound_{{file['id']}}.volume(volume);
+        }
+      }
+      let sound_{{file['id']}} = new Howl({
+        src: ['{{url_for("static", filename="audio/" + file["name"])}}'],
+        onplay: function() {
+          requestAnimationFrame(function update() {
+            document.querySelector("#audio_{{file['id']}}_seek_button").style.marginLeft = sound_{{file['id']}}.seek() / sound_{{file['id']}}.duration() * 85 + "%";
+            document.querySelector("#audio_{{file['id']}}_seek_fill").style.width = sound_{{file['id']}}.seek() / sound_{{file['id']}}.duration() * 85 + 1 + "%";
+            if(sound_{{file['id']}}.playing()) {
+              requestAnimationFrame(update);
+            }
+          })
+        }
+      });
+
+      document.querySelector("#audio_{{file['id']}}_slider_button").style.marginLeft = sound_{{file['id']}}.volume() * 85 + "%";
+      document.querySelector("#audio_{{file['id']}}_slider_fill").style.width = sound_{{file['id']}}.volume() * 100 + "%";
+
+      document.querySelector("#audio_{{file['id']}}_play").addEventListener('click', function(e) {
+        if(sound_{{file['id']}}.playing()) {
+          sound_{{file['id']}}.pause();
+          e.currentTarget.innerHTML = '<img src="{{url_for("static", filename="icons/play.svg")}}" />';
+        } else {
+          sound_{{file['id']}}.play();
+          e.currentTarget.innerHTML = '<img src="{{url_for("static", filename="icons/pause.svg")}}" />';
+        }
+      });
+
+      document.querySelector("#audio_{{file['id']}}_volume_reveal").addEventListener('click', function() {
+        if(document.querySelector("#audio_{{file['id']}}_volume").style.display == "block") {
+          document.querySelector("#audio_{{file['id']}}_volume").style.display = "none";
+        } else {
+          document.querySelector("#audio_{{file['id']}}_volume").style.display = "block";
+        }
+      });
+
+      document.querySelector("#audio_{{file['id']}}_volume").addEventListener('mousedown', function(e) {
+        document.querySelector("#audio_{{file['id']}}_volume").addEventListener('mousemove', changeVolume_{{file['id']}})
+      });
+      document.querySelector("#audio_{{file['id']}}_volume").addEventListener('mouseup', function(e) {
+        document.querySelector("#audio_{{file['id']}}_volume").removeEventListener('mousemove', changeVolume_{{file['id']}})
+      })
+      document.querySelector("#audio_{{file['id']}}_volume").addEventListener('mouseleave', function(e) {
+        document.querySelector("#audio_{{file['id']}}_volume").removeEventListener('mousemove', changeVolume_{{file['id']}})
+      })
+    </script>
+  {% endfor %}
 {% endblock %}
