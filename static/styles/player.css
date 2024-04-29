@@ -12,20 +12,20 @@
 }
 
 .control-button {
-    background-color: #333;
-    color: white;
+    background-color: #F7934C;
+    color: black;
     border: none;
     padding: 5px 10px;
     margin: 0 5px;
     cursor: pointer;
     font-size: 1rem;
     border-radius: 10px;
-    box-shadow: #111 2px 2px 5px;
+    box-shadow: #100B00 2px 2px 5px;
     height: 40px;
 }
 
 .control-button:hover {
-    background-color: #111;
+    background-color: #CC5803;
 }
 
 .controls img {

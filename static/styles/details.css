@@ -1,0 +1,16 @@
+.details {
+    padding: 20px;
+}
+
+.audio_info {
+    display: flex;
+}
+
+.transcription {
+    flex: 75;
+    margin-right: 10px;
+}
+
+.metadata {
+    flex: 25;
+}
