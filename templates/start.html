@@ -1,15 +1,21 @@
 {% extends "layout.html" %}
 {% block title %}Welcome{% endblock %}
 {% block content %}
-  <h1>Welcome</h1>
-  <p>Select the location of your files here</p>
-  <form>
-    <input type="text" name="folder" placeholder="Enter a folder path">
-    <button type="submit" class="btn btn-primary">Select</button>
-  </form>
+<div class="centered-container">
+    <h1>Welcome</h1>
+    <p>Select the location of your files here</p>
+    <div class="loader-container">
+        <div class="loader"></div>
+    </div>
+    <form>
+      <input type="text" name="folder" placeholder="Enter a folder path">
+      <button type="submit" class="btn btn-primary">Select</button>
+    </form>
+</div>
   <script type="text/javascript">
     document.querySelector('form').addEventListener('submit', function(event) {
       event.preventDefault();
+      document.querySelector('.loader-container').style.display = 'block';
       fetch('/select_folder', {
         method: 'POST',
         headers: {
