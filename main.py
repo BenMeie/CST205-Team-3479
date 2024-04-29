@@ -1,6 +1,9 @@
 import os
 import shutil
 import atexit
+import platform
+import subprocess
+from tinytag import TinyTag
 from flask import Flask, render_template, request
 
 def cleanup():
@@ -17,7 +20,7 @@ app = Flask(__name__)
 # {
 #   name: The file name
 #   path: The file's full path
-#   existing_tags[]: An array of tags that already exist for the file, mostly in the comments
+#   metadata: Existing file metadata
 #   transcription_info: information returned by the Whisper Library
 # }
 audio_files = []
@@ -30,16 +33,32 @@ def start():
 def browse():
     return render_template('browse.html', audio_files=audio_files)
 
-@app.route('/details')
-def details():
-    return render_template('details.html')
+@app.route('/details/<int:id>')
+def details(id):
+    file = {}
+    for f in audio_files:
+        if f['id'] == id:
+            file = f
+            break
+        
+    return render_template('details.html', file=file)
 
 @app.route('/select_folder', methods=['POST'])
 def select_folder():
     for name in os.listdir(request.json['folder']):
         if name.endswith('.wav') or name.endswith('.mp3'):
             shutil.copy(request.json['folder'] + '/' + name, './static/audio/')
-            audio_files.append({'name': name, 'path': request.json['folder'] + '/' + name, 'id': len(audio_files)})
+            metadata = TinyTag.get('./static/audio/' + name)
+            audio_files.append({'name': name, 'path': request.json['folder'] + '/' + name, 'id': len(audio_files), 'metadata': metadata.as_dict(), 'transcription_info': None})
+    return ('', 200)
+
+@app.route('/open_file', methods=['POST'])
+def open_file():
+    if platform.system() == 'Windows':
+        subprocess.Popen(r'explorer /select,"' + request.json['path'] + '"')
+    if platform.system() == 'Darwin':
+        subprocess.call(["open", "-R", request.json['path']])
+    
     return ('', 200)
     
 
