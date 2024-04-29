@@ -4,16 +4,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>{% endblock %}
 {% block content %}
 <h1>Browse</h1>
+<input class="large" type="text" id="search" placeholder="Search for audio files">
 {% for file in audio_files %}
 
 <div class="audio">
-    <p>{{file['name']}}</p>
+    <a href="{{url_for("details", id=file['id'])}}"><p>{{file['name']}}</p></a>
     <div class="controls">
-        <button class="control-button" id="audio_{{file['id']}}_play"><img src="{{url_for(" static",
+        <button class="control-button" id="audio_{{file['id']}}_play"><img src="{{url_for("static",
                 filename="icons/play.svg" )}}" /></button>
         <!-- Volume Control -->
         <div class="volume-control">
-            <button id="audio_{{file['id']}}_volume_reveal" class="control-button"><img src="{{url_for(" static",
+            <button id="audio_{{file['id']}}_volume_reveal" class="control-button"><img src="{{url_for("static",
                     filename="icons/volume-2.svg" )}}" /></button>
             <div class="slider-container hidden" id="audio_{{file['id']}}_volume" style="width: 100px;">
                 <div class="slider-background"></div>
@@ -27,12 +28,13 @@
             <div class="slider-button" id="audio_{{file['id']}}_seek_button"></div>
             <div class="slider-filled" id="audio_{{file['id']}}_seek_fill"></div>
         </div>
+        <button class="control-button" id="audio_{{file['id']}}_show">Show</button>
     </div>
 </div>
 
 <script>
     /**
-     * Ignore any errors in this part relating to anything in {{}}. Flask will replace these with the correct values.
+     * Ignore any errors in this part relating to anything in handlebars. Flask will replace these with the correct values.
      */
 
     /**
@@ -45,7 +47,7 @@
         if (seek < 1) {
             document.querySelector("#audio_{{file['id']}}_seek_button").style.marginLeft = seek * 100 + "%";
             document.querySelector("#audio_{{file['id']}}_seek_fill").style.width = seek * 100 + 1 + "%";
-            sound_{ { file['id'] } }.seek(sound_{{ file['id']}}.duration() * seek);
+            sound_{{ file['id'] }}.seek(sound_{{ file['id']}}.duration() * seek);
         }
     }
 
@@ -59,7 +61,7 @@
         if (volume < 1) {
             document.querySelector("#audio_{{file['id']}}_slider_button").style.marginLeft = volume * 100 + "%";
             document.querySelector("#audio_{{file['id']}}_slider_fill").style.width = volume * 100 + 1 + "%";
-          sound_{ { file['id'] } }.volume(volume);
+          sound_{{ file['id'] }}.volume(volume);
         }
     }
 
@@ -74,25 +76,25 @@
         // On play listener to update the seek control
         onplay: function () {
             requestAnimationFrame(function update() {
-                document.querySelector("#audio_{{file['id']}}_seek_button").style.marginLeft = sound_{ { file['id'] } }.seek() / sound_{{ file['id']}}.duration() * 85 + "%";
+                document.querySelector("#audio_{{file['id']}}_seek_button").style.marginLeft = sound_{{ file['id'] }}.seek() / sound_{{ file['id']}}.duration() * 85 + "%";
                 document.querySelector("#audio_{{file['id']}}_seek_fill").style.width = sound_{{ file['id']}}.seek() / sound_{{ file['id']}}.duration() * 85 + 1 + "%";
-                if (sound_{ { file['id'] } }.playing()) {
+                if (sound_{{ file['id'] }}.playing()) {
                     requestAnimationFrame(update);
                 }
             })
         }
     });
 
-    document.querySelector("#audio_{{file['id']}}_slider_button").style.marginLeft = sound_{ { file['id'] } }.volume() * 85 + "%";
-    document.querySelector("#audio_{{file['id']}}_slider_fill").style.width = sound_{ { file['id'] } }.volume() * 100 + "%";
+    document.querySelector("#audio_{{file['id']}}_slider_button").style.marginLeft = sound_{{ file['id'] }}.volume() * 85 + "%";
+    document.querySelector("#audio_{{file['id']}}_slider_fill").style.width = sound_{{ file['id'] }}.volume() * 100 + "%";
 
     // Create event listener for the play/pause button
     document.querySelector("#audio_{{file['id']}}_play").addEventListener('click', function (e) {
-        if (sound_{ { file['id'] } }.playing()) {
-            sound_{ { file['id'] } }.pause();
+        if (sound_{{ file['id'] }}.playing()) {
+            sound_{{ file['id'] }}.pause();
             e.currentTarget.innerHTML = '<img src="{{url_for("static", filename="icons/play.svg")}}" />';
         } else {
-            sound_{ { file['id'] } }.play();
+            sound_{{ file['id'] }}.play();
             e.currentTarget.innerHTML = '<img src="{{url_for("static", filename="icons/pause.svg")}}" />';
         }
     });
@@ -127,6 +129,19 @@
     document.querySelector("#audio_{{file['id']}}_seek").addEventListener('mouseleave', function (e) {
         document.querySelector("#audio_{{file['id']}}_seek").removeEventListener('mousemove', changeSeek_{{ file['id']}})
     })
+
+    // Create event listener for the show button
+    document.querySelector("#audio_{{file['id']}}_show").addEventListener('click', function () {
+        fetch('/open_file', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          path: "{{file['path']}}"
+        })
+      })
+    });
 </script>
 {% endfor %}
 {% endblock %}
