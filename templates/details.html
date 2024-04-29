@@ -1,6 +1,146 @@
 {% extends "layout.html" %}
 {% block title %}Details{% endblock %}
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>{% endblock %}
 {% block content %}
-  <h1>Details for ...</h1>
-  <p>Expanded view for audio files. May or may not implement</p>
+<div class="details">
+  <h1>{{file['name']}}</h1>
+  <div class="audio">
+    <div class="controls">
+        <button class="control-button" id="audio_play"><img src="{{url_for("static",
+                filename="icons/play.svg" )}}" /></button>
+        <!-- Volume Control -->
+        <div class="volume-control">
+            <button id="audio_volume_reveal" class="control-button"><img src="{{url_for("static",
+                    filename="icons/volume-2.svg" )}}" /></button>
+            <div class="slider-container hidden" id="audio_volume" style="width: 100px;">
+                <div class="slider-background"></div>
+                <div class="slider-button" id="audio_slider_button"></div>
+                <div class="slider-filled" id="audio_slider_fill"></div>
+            </div>
+        </div>
+        <!-- Seek Control -->
+        <div class="slider-container" id="audio_seek">
+            <div class="slider-background"></div>
+            <div class="slider-button" id="audio_seek_button"></div>
+            <div class="slider-filled" id="audio_seek_fill"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /**
+     * Ignore any errors in this part relating to anything in handlebars. Flask will replace these with the correct values.
+     */
+
+    /**
+     * Seek along the howler audio object
+     * @param {MouseEvent} e - The mouse event passed by onmousemove
+     */
+    const changeSeek = (e) => {
+        let rect = e.currentTarget.getBoundingClientRect();
+        let seek = (e.clientX - rect.left) / rect.width;
+        if (seek < 1) {
+            document.querySelector("#audio_seek_button").style.marginLeft = seek * 100 + "%";
+            document.querySelector("#audio_seek_fill").style.width = seek * 100 + 1 + "%";
+            sound.seek(sound.duration() * seek);
+        }
+    }
+
+    /**
+     * Change the volume of the howler audio object
+     * @param {MouseEvent} e - The mouse event passed by onmousemove
+     */
+    const changeVolume = (e) => {
+        let rect = e.currentTarget.getBoundingClientRect();
+        let volume = (e.clientX - rect.left) / rect.width;
+        if (volume < 1) {
+            document.querySelector("#audio_slider_button").style.marginLeft = volume * 100 + "%";
+            document.querySelector("#audio_slider_fill").style.width = volume * 100 + 1 + "%";
+          sound.volume(volume);
+        }
+    }
+
+    /**
+     * The Howler Audio Object.
+     * https://github.com/goldfire/howler.js#documentation
+     */
+    let sound = new Howl({
+        // Audio files are copied into the static directory so we can access them in the web app here
+        src: ['{{url_for("static", filename="audio/" + file["name"])}}'],
+
+        // On play listener to update the seek control
+        onplay: function () {
+            requestAnimationFrame(function update() {
+                document.querySelector("#audio_seek_button").style.marginLeft = sound.seek() / sound.duration() * 85 + "%";
+                document.querySelector("#audio_seek_fill").style.width = sound.seek() / sound.duration() * 85 + 1 + "%";
+                if (sound.playing()) {
+                    requestAnimationFrame(update);
+                }
+            })
+        }
+    });
+
+    document.querySelector("#audio_slider_button").style.marginLeft = sound.volume() * 85 + "%";
+    document.querySelector("#audio_slider_fill").style.width = sound.volume() * 100 + "%";
+
+    // Create event listener for the play/pause button
+    document.querySelector("#audio_play").addEventListener('click', function (e) {
+        if (sound.playing()) {
+            sound.pause();
+            e.currentTarget.innerHTML = '<img src="{{url_for("static", filename="icons/play.svg")}}" />';
+        } else {
+            sound.play();
+            e.currentTarget.innerHTML = '<img src="{{url_for("static", filename="icons/pause.svg")}}" />';
+        }
+    });
+
+    // Create event listener for the volume button
+    document.querySelector("#audio_volume_reveal").addEventListener('click', function () {
+        if (document.querySelector("#audio_volume").style.display == "block") {
+            document.querySelector("#audio_volume").style.display = "none";
+        } else {
+            document.querySelector("#audio_volume").style.display = "block";
+        }
+    });
+
+    // Create event listeners for the volume slider
+    document.querySelector("#audio_volume").addEventListener('mousedown', function (e) {
+        document.querySelector("#audio_volume").addEventListener('mousemove', changeVolume)
+    });
+    document.querySelector("#audio_volume").addEventListener('mouseup', function (e) {
+        document.querySelector("#audio_volume").removeEventListener('mousemove', changeVolume)
+    })
+    document.querySelector("#audio_volume").addEventListener('mouseleave', function (e) {
+        document.querySelector("#audio_volume").removeEventListener('mousemove', changeVolume)
+    })
+
+    // Create event listeners for the seek control
+    document.querySelector("#audio_seek").addEventListener('mousedown', function (e) {
+        document.querySelector("#audio_seek").addEventListener('mousemove', changeSeek)
+    });
+    document.querySelector("#audio_seek").addEventListener('mouseup', function (e) {
+        document.querySelector("#audio_seek").removeEventListener('mousemove', changeSeek)
+    })
+    document.querySelector("#audio_seek").addEventListener('mouseleave', function (e) {
+        document.querySelector("#audio_seek").removeEventListener('mousemove', changeSeek)
+    })
+
+</script>
+  <div class="audio_info">
+    <div class="transcription">
+      <p>Transcription goes here</p>
+    </div>
+    <div class="metadata">
+      <p>Album: <span>{{file['metadata']['album']}}</span></p>
+      <p>Artist: <span>{{file['metadata']['artist']}}</span></p>
+      <p>Bitrate: <span>{{file['metadata']['bitrate']}}</span></p>
+      <p>Channels: <span>{{file['metadata']['channels']}}</span></p>
+      <p>Comment: <span>{{file['metadata']['comment']}}</span></p>
+      <p>Duration: <span>{{file['metadata']['duration']}}</span></p>
+      <p>Genre: <span>{{file['metadata']['genre']}}</span></p>
+      <p>Year: <span>{{file['metadata']['year']}}</span></p>
+    </div>
+  </div>
+</div> 
 {% endblock %}
