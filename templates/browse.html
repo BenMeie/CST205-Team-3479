@@ -4,11 +4,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>{% endblock %}
 {% block content %}
 <h1>Browse</h1>
-<input class="large" type="text" id="search" placeholder="Search for audio files">
+<div class="search_field">
+    <input class="large" type="text" id="search" placeholder="Search for audio files">
+    <button class="control-button" id="search_button"><img src="{{url_for("static", filename="icons/search.svg" )}}" /></button>
+</div>
 {% for file in audio_files %}
 
 <div class="audio">
-    <a href="{{url_for("details", id=file['id'])}}"><p>{{file['name']}}</p></a>
+    <a href="{{url_for("details", id=file['id'])}}" class="file_link"><p>{{file['name']}}</p></a>
     <div class="controls">
         <button class="control-button" id="audio_{{file['id']}}_play"><img src="{{url_for("static",
                 filename="icons/play.svg" )}}" /></button>
@@ -145,4 +148,17 @@
     });
 </script>
 {% endfor %}
+<script>
+    document.querySelector('#search').addEventListener('keydown', function (e) {
+        if(e.key === 'Enter') {
+            e.preventDefault();
+            let search = e.currentTarget.value.toLowerCase();
+            window.location.href = '/browse?search=' + search;
+        }
+    });
+    document.querySelector('#search_button').addEventListener('click', function (e) {
+        let search = document.querySelector('#search').value.toLowerCase();
+        window.location.href = '/browse?search=' + search;
+    });
+</script>
 {% endblock %}

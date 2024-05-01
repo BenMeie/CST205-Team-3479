@@ -31,6 +31,10 @@ def start():
 
 @app.route('/browse')
 def browse():
+    search = request.args.get('search')
+    if search:
+        # Send search to Meilisearch and replace audio files with results sent from there
+        pass
     return render_template('browse.html', audio_files=audio_files)
 
 @app.route('/details/<int:id>')
@@ -46,8 +50,8 @@ def details(id):
 @app.route('/select_folder', methods=['POST'])
 def select_folder():
     for name in os.listdir(request.json['folder']):
-        if name.endswith('.wav') or name.endswith('.mp3'):
-            shutil.copy(request.json['folder'] + '/' + name, './static/audio/')
+        if name.endswith('.wav') or name.endswith('.mp3') or name.endswith('.m4a') and not os.path.islink('./static/audio/' + name):
+            os.symlink(request.json['folder'] + '/' + name, './static/audio/' + name)
             metadata = TinyTag.get('./static/audio/' + name)
             audio_files.append({'name': name, 'path': request.json['folder'] + '/' + name, 'id': len(audio_files), 'metadata': metadata.as_dict(), 'transcription_info': None})
     return ('', 200)
@@ -60,7 +64,6 @@ def open_file():
         subprocess.call(["open", "-R", request.json['path']])
     
     return ('', 200)
-    
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)
