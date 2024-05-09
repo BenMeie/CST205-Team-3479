@@ -59,7 +59,7 @@ def select_folder():
     #Translates dictionary of audio files to a list of just audio file paths
     audio_files_list = Whisper_Pro.audio_list_translation(audio_files)
     #Process audio files with Whisper
-    Whisper_Pro. whisper_process(audio_files_list)
+    Whisper_Pro.whisper_process(audio_files_list)
     return ('', 200)
 
 @app.route('/open_file', methods=['POST'])
