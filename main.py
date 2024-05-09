@@ -5,6 +5,8 @@ import platform
 import subprocess
 from tinytag import TinyTag
 from flask import Flask, render_template, request
+import Whisper_Pro
+
 
 def cleanup():
     shutil.rmtree('./static/audio')
@@ -54,6 +56,10 @@ def select_folder():
             os.symlink(request.json['folder'] + '/' + name, './static/audio/' + name)
             metadata = TinyTag.get('./static/audio/' + name)
             audio_files.append({'name': name, 'path': request.json['folder'] + '/' + name, 'id': len(audio_files), 'metadata': metadata.as_dict(), 'transcription_info': None})
+    #Translates dictionary of audio files to a list of just audio file paths
+    audio_files_list = Whisper_Pro.audio_list_translation(audio_files)
+    #Process audio files with Whisper
+    Whisper_Pro. whisper_process(audio_files_list)
     return ('', 200)
 
 @app.route('/open_file', methods=['POST'])
@@ -62,6 +68,7 @@ def open_file():
         subprocess.Popen(r'explorer /select,"' + request.json['path'] + '"')
     if platform.system() == 'Darwin':
         subprocess.call(["open", "-R", request.json['path']])
+
     
     return ('', 200)
 
