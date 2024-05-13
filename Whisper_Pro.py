@@ -10,7 +10,10 @@ that adds meta data tags to files for searching purposes.
 import os
 import glob
 import whisper
-from pytaggit import tag_manager as tm
+try:
+    from pytaggit import tag_manager as tm
+except:
+    pass
 from meilisearch.client import Client
 
 client = Client('http://localhost:7700') 
@@ -70,23 +73,27 @@ def whisper_process(audio_list):
     
     # This loop iterates each audio file, transcribes it, removes common words using remove_commons_n_punct()
     for audio in audio_list:
-        result = model.transcribe(audio)
-        myText = result["text"]
-        tags = remove_commons_n_punct(myText)
-        tag = tm.Tag(name=("language:" + result["language"]), color=color_tag)
-        tm.add_tag(tag, audio)
+        try:
+            result = model.transcribe(audio['path'])
+            myText = result["text"]
+            tags = remove_commons_n_punct(myText)
+            
+            # Indexing audio file with tags into MeiliSearch (new)
+            audio['tags'] = tags
+        except Exception as e:
+            print(e)
+            pass
+        index.add_documents([audio])
         
-        # Indexing audio file with tags into MeiliSearch (new)
-        document = {
-            'audio_path': audio,
-            'tags': tags
-        }
-        index.add_documents([document])
-        
+        try: 
+            tag = tm.Tag(name=("language:" + result["language"]), color=color_tag)
+            tm.add_tag(tag, audio['audio'])
     # This loop adds tags to the audio file using pytaggit
-        for tag in tags:
-            tag2add = tm.Tag(name=tag, color=color_tag)
-            tm.add_tag(tag2add, audio)
+            for tag in tags:
+                tag2add = tm.Tag(name=tag, color=color_tag)
+                tm.add_tag(tag2add, audio['path'])
+        except:
+            pass
             
 def audio_list_translation(audiolist):
     """
@@ -136,6 +143,6 @@ def search_meilisearch(keyword): #(new)
     # Output matching audio files to the user
     matching_audio_files = []
     for hit in search_results['hits']:
-        matching_audio_files.append(hit['audio_path'])
+        matching_audio_files.append(hit)
     
     return matching_audio_files
