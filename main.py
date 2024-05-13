@@ -3,6 +3,7 @@ import shutil
 import atexit
 import platform
 import subprocess
+from threading import Thread
 from tinytag import TinyTag
 from flask import Flask, render_template, request
 import Whisper_Pro
@@ -13,7 +14,23 @@ from Whisper_Pro import search_meilisearch
 client = Client('http://localhost:7700')  #melisearch port
 index = client.index('audio_tags') #new
 
+def launch_meilisearch():
+    if platform.system() == 'Windows':
+        try:
+            subprocess.run(['.\\meilisearch-windows-amd64.exe'])
+        except:
+            print("Could not find MeiliSearch executable. Downloading...")
+            subprocess.run(['curl', '-L', 'https://github.com/meilisearch/meilisearch/releases/download/v1.8.0/meilisearch-windows-amd64.exe', '-o', 'meilisearch-windows-amd64.exe'])
+            subprocess.run(['.\\meilisearch-windows-amd64.exe'])
+    elif platform.system() == 'Darwin':
+        try:
+            subprocess.run(['./meilisearch-macos-apple-silicon'])
+        except:
+            print("Could not find MeiliSearch executable. Downloading...")
+            subprocess.run(['curl', '-L', 'https://github.com/meilisearch/meilisearch/releases/download/v1.8.0/meilisearch-macos-apple-silicon', '-o', 'meilisearch-macos-apple-silicon'])
+            subprocess.run(['./meilisearch-macos-apple-silicon'])
 
+Thread(target=launch_meilisearch).start()
 
 def cleanup():
     shutil.rmtree('./static/audio')
@@ -41,13 +58,14 @@ def start():
 # test route martin
 @app.route('/browse')
 def browse():
+    files_to_send = audio_files
     search = request.args.get('search')
     if search:
         # Perform MeiliSearch search and get matching audio files
         matching_audio_files = search_meilisearch(search)
         # Replace audio_files with matching_audio_files
-        audio_files = matching_audio_files
-    return render_template('browse.html', audio_files=audio_files)
+        files_to_send = matching_audio_files
+    return render_template('browse.html', audio_files=files_to_send)
 
 
 
@@ -66,12 +84,10 @@ def select_folder():
     for name in os.listdir(request.json['folder']):
         if name.endswith('.wav') or name.endswith('.mp3') or name.endswith('.m4a') and not os.path.islink('./static/audio/' + name):
             os.symlink(request.json['folder'] + '/' + name, './static/audio/' + name)
-            metadata = TinyTag.get('./static/audio/' + name)
+            metadata = TinyTag.get(request.json['folder'] + '/' + name)
             audio_files.append({'name': name, 'path': request.json['folder'] + '/' + name, 'id': len(audio_files), 'metadata': metadata.as_dict(), 'transcription_info': None})
-    #Translates dictionary of audio files to a list of just audio file paths
-    audio_files_list = Whisper_Pro.audio_list_translation(audio_files)
     #Process audio files with Whisper
-    Whisper_Pro.whisper_process(audio_files_list)
+    Whisper_Pro.whisper_process(audio_files)
     return ('', 200)
 
 @app.route('/open_file', methods=['POST'])
@@ -86,3 +102,4 @@ def open_file():
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)
+
