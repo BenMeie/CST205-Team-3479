@@ -6,6 +6,13 @@ import subprocess
 from tinytag import TinyTag
 from flask import Flask, render_template, request
 import Whisper_Pro
+from meilisearch.client import Client
+from Whisper_Pro import search_meilisearch
+
+
+client = Client('http://localhost:7700')  #melisearch port
+index = client.index('audio_tags') #new
+
 
 
 def cleanup():
@@ -31,13 +38,18 @@ audio_files = []
 def start():
     return render_template('start.html')
 
+# test route martin
 @app.route('/browse')
 def browse():
     search = request.args.get('search')
     if search:
-        # Send search to Meilisearch and replace audio files with results sent from there
-        pass
+        # Perform MeiliSearch search and get matching audio files
+        matching_audio_files = search_meilisearch(search)
+        # Replace audio_files with matching_audio_files
+        audio_files = matching_audio_files
     return render_template('browse.html', audio_files=audio_files)
+
+
 
 @app.route('/details/<int:id>')
 def details(id):
