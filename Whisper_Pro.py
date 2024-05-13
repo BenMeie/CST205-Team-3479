@@ -11,6 +11,10 @@ import os
 import glob
 import whisper
 from pytaggit import tag_manager as tm
+from meilisearch.client import Client
+
+client = Client('http://localhost:7700') 
+index = client.index('audio_tags')
 
 common_words = ["i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "you're", "you've", "you'll",
                 "you'd", "your", "yours", "yourself", "yourselves", "he", "him", "his", "himself", "she", "she's",
@@ -72,6 +76,13 @@ def whisper_process(audio_list):
         tag = tm.Tag(name=("language:" + result["language"]), color=color_tag)
         tm.add_tag(tag, audio)
         
+        # Indexing audio file with tags into MeiliSearch (new)
+        document = {
+            'audio_path': audio,
+            'tags': tags
+        }
+        index.add_documents([document])
+        
     # This loop adds tags to the audio file using pytaggit
         for tag in tags:
             tag2add = tm.Tag(name=tag, color=color_tag)
@@ -116,3 +127,15 @@ def remove_commons_n_punct(word_list):
             while(word in res):
                 res.remove(word)
     return res
+
+
+def search_meilisearch(keyword): #(new)
+    # Perform a search in MeiliSearch based on the keyword
+    search_results = index.search(keyword)
+    
+    # Output matching audio files to the user
+    matching_audio_files = []
+    for hit in search_results['hits']:
+        matching_audio_files.append(hit['audio_path'])
+    
+    return matching_audio_files
