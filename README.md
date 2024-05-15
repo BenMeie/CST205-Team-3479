@@ -20,7 +20,7 @@ python main.py
 
 __pytaggit does not work on some Windows computers. Skipping it's installation should not result in any errors__
 
-Download free audio files to test with (here)[https://archive.org/details/audio_podcast]
+Download free audio files to test with [here](https://archive.org/details/audio_podcast)
 
 ### Repo
 https://github.com/BenMeie/CST205-Team-3479
