@@ -10,9 +10,13 @@ CST205
 
 ### Installation
 This project requires a few python packages. Install with
-```pip install openai-whisper tinytag pytaggit flask meilisearch```
+```
+pip install openai-whisper tinytag pytaggit flask meilisearch
+```
 then just run
-```python main.py```
+```
+python main.py
+```
 
 ### Repo
 https://github.com/BenMeie/CST205-Team-3479
