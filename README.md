@@ -18,6 +18,8 @@ then just run
 python main.py
 ```
 
+__pytaggit does not work on some Windows computers. Skipping it's installation should not result in any errors__
+
 ### Repo
 https://github.com/BenMeie/CST205-Team-3479
 
