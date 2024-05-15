@@ -21,7 +21,6 @@ import Whisper_Pro
 from meilisearch.client import Client
 from Whisper_Pro import search_meilisearch
 
-
 client = Client('http://localhost:7700')  #melisearch port
 index = client.index('audio_tags') #new
 def launch_meilisearch():
@@ -71,6 +70,8 @@ app = Flask(__name__)
 #   transcription_info: information returned by the Whisper Library
 # }
 audio_files = []
+completed_files = []
+total_files = []
 
 @app.route('/')
 def start():
@@ -110,6 +111,7 @@ def select_folder():
             os.symlink(request.json['folder'] + '/' + name, './static/audio/' + name)
             metadata = TinyTag.get(request.json['folder'] + '/' + name)
             audio_files.append({'name': name, 'path': request.json['folder'] + '/' + name, 'id': len(audio_files), 'metadata': metadata.as_dict(), 'transcription_info': None})
+            total_files.append(True)
     #Process audio files with Whisper - Matthew
     Whisper_Pro.whisper_process(audio_files)
     return ('', 200)
@@ -124,6 +126,18 @@ def open_file():
 
     
     return ('', 200)
+
+@app.route('/processed_file', methods=['POST'])
+def add_processed_file():
+    completed_files.append(True)
+    return('', 200)
+    
+@app.route('/progress')
+def get_processed_files():
+    if(len(completed_files) > 0) and (len(total_files) > 0):
+        print(f'{len(completed_files)/len(total_files)}')
+        return f'{len(completed_files)/len(total_files)}'
+    return '0'
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)

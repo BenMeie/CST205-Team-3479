@@ -9,6 +9,7 @@ that adds meta data tags to files for searching purposes.
 
 import os
 import glob
+import subprocess
 import whisper
 try:
     from pytaggit import tag_manager as tm
@@ -100,6 +101,7 @@ def whisper_process(audio_list):
                 tm.add_tag(tag2add, audio['path'])
         except:
             pass
+        subprocess.run(['curl', '-X', 'POST', 'http://127.0.0.1:3000/processed_file'])
             
 def audio_list_translation(audiolist):
     """

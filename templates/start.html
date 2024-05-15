@@ -6,6 +6,10 @@
     <p>Select the location of your files here</p>
     <div class="loader-container">
         <div class="loader"></div>
+        <div class="slider-container smaller">
+          <div class="slider-background"></div>
+          <div class="slider-filled slow" id="progress_fill"></div>
+        </div>
     </div>
     <form>
       <input type="text" name="folder" placeholder="Enter a folder path">
@@ -15,7 +19,7 @@
   <script type="text/javascript">
     document.querySelector('form').addEventListener('submit', function(event) {
       event.preventDefault();
-      document.querySelector('.loader-container').style.display = 'block';
+      document.querySelector('.loader-container').style.display = 'flex';
       fetch('/select_folder', {
         method: 'POST',
         headers: {
@@ -28,5 +32,13 @@
         window.location.href = '/browse'
       })
     });
+
+    setInterval(() => {
+      fetch('/progress').then(function(response) {
+        return response.text();
+      }).then(function(data) {
+        document.querySelector('#progress_fill').style.width = parseFloat(data) * 100 + "%";
+      })
+    }, 500)
   </script>
 {% endblock %}

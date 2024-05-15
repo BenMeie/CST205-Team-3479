@@ -77,3 +77,12 @@
     position: absolute;
     width: 100%;
 }
+
+.slow {
+    transition: width 5s ease;
+}
+
+.slider-container.smaller {
+    margin-top: 10px;
+    width: 50%;
+}
