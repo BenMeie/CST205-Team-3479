@@ -2,14 +2,14 @@
 <html>
   <head>
       <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
-      <title>{% block title %}{% endblock %} - CST205 Final Project</title>
+      <title>{% block title %}{% endblock %} - Audio Transcriber</title>
       {% block head %}
       {% endblock %}
   </head>
   <body>
     <nav>
         <ul class="nav-list">
-            <li class="nav-item"><a class="nav-brand" href="{{ url_for('start') }}">CST205 Final Project</a></li>
+            <li class="nav-item"><a class="nav-brand" href="{{ url_for('start') }}">Audio Transcriber</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('start') }}">Add Files</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('browse') }}">Browse</a></li>
         </ul>

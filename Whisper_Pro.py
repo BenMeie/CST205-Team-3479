@@ -36,7 +36,6 @@ common_words = ["i", "me", "my", "myself", "we", "our", "ours", "ourselves", "yo
 color_tag = "blue"
 
 
-
 def audio_file_scan(directory):
     """
     This function takes a directory and scans it for audio file types. 
@@ -47,6 +46,8 @@ def audio_file_scan(directory):
 
      Returns:
          audio_files: List of audio file paths
+     By:
+        Matthew
     """
     audio_files = []
     for root, dirs, files in os.walk(directory):
@@ -66,6 +67,9 @@ def whisper_process(audio_list):
 
      Returns:
          None
+         
+     By:
+        Matthew
     """
     
     # Load our model
@@ -73,18 +77,20 @@ def whisper_process(audio_list):
     
     # This loop iterates each audio file, transcribes it, removes common words using remove_commons_n_punct()
     for audio in audio_list:
+        # Whisper has issues on Windows, so skip the transcription if it fails
         try:
             result = model.transcribe(audio['path'])
             myText = result["text"]
             tags = remove_commons_n_punct(myText)
             
-            # Indexing audio file with tags into MeiliSearch (new)
             audio['tags'] = tags
         except Exception as e:
             print(e)
             pass
+        # Indexing audio file with tags into MeiliSearch (new)
         index.add_documents([audio])
         
+        # pytaggit is not supported on Windows, so skip the tagging if it fails
         try: 
             tag = tm.Tag(name=("language:" + result["language"]), color=color_tag)
             tm.add_tag(tag, audio['audio'])
@@ -104,6 +110,8 @@ def audio_list_translation(audiolist):
 
      Returns:
          paths: A list of just audio file paths
+     By:
+        Matthew
     """
     paths = []
     for entry in audiolist:
@@ -120,6 +128,8 @@ def remove_commons_n_punct(word_list):
 
      Returns:
          res: List of tags to be added
+     By:
+        Matthew
     """
     Newlist = word_list.replace(",", "")
     Newlist = Newlist.replace(".", "")
@@ -136,7 +146,7 @@ def remove_commons_n_punct(word_list):
     return res
 
 
-def search_meilisearch(keyword): #(new)
+def search_meilisearch(keyword): # Martin
     # Perform a search in MeiliSearch based on the keyword
     search_results = index.search(keyword)
     
