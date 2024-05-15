@@ -1,3 +1,14 @@
+"""
+Course: Python CST205
+Title: Audio Searcher
+Abstract: We input audio files, use whisper to transcribe the audio to text, turn the text into tags/keywords that we are able 
+to search for and have it display on our website 
+Authors: Benjamin Meier - Flask GUI, Martin Nguyen - Meleisearch API Intergration, Matthew Sanchez - Whisper API And File Scanning, Pablo Gomez - TBA
+Date: 5/14/2024
+Link to GitHub repository:  https://github.com/BenMeie/CST205-Team-3479
+"""
+
+
 import os
 import shutil
 import atexit
@@ -55,15 +66,15 @@ audio_files = []
 def start():
     return render_template('start.html')
 
-# test route martin
+#  melisearch route martin
 @app.route('/browse')
 def browse():
     files_to_send = audio_files
     search = request.args.get('search')
     if search:
-        # Perform MeiliSearch search and get matching audio files
+        # perform MeiliSearch search and get matching audio files
         matching_audio_files = search_meilisearch(search)
-        # Replace audio_files with matching_audio_files
+        # replace audio_files with matching_audio_files
         files_to_send = matching_audio_files
     return render_template('browse.html', audio_files=files_to_send)
 
